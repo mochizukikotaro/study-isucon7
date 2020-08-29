@@ -404,6 +404,7 @@ class Game
         unless adding_at[t].nil?
           updated = true
           total_milli_isu += str2big(adding_at[t][:isu]) * 1000
+          adding_at[t][:isu] = adding_at[t][:isu].to_s
         end
 
         # 時刻 t で発生する buying を計算する
