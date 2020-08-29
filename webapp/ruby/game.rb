@@ -443,6 +443,8 @@ class Game
 
           if total_milli_isu >= item_price[item_id] * 1000
             item_on_sale[item_id] = t
+          else
+            break
           end
         end
       end
