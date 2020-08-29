@@ -158,7 +158,7 @@ class Game
     end
 
     def add_isu(conn, room_name, req_isu, req_time)
-
+      conn = connect_db
       begin
         conn.query('BEGIN')
 
@@ -178,7 +178,7 @@ class Game
     end
 
     def buy_item(conn, room_name, item_id, count_bought, req_time)
-
+      conn = connect_db
       begin
         conn.query('BEGIN')
 
@@ -269,7 +269,7 @@ class Game
     end
 
     def get_status(conn, room_name)
-
+      conn = connect_db
       begin
         conn.query('BEGIN')
 
@@ -454,15 +454,15 @@ class Game
   end
 
   def connect_db
-    @conn ||= Mysql2::Client.new(
-      host: ENV.fetch('ISU_DB_HOST') { '127.0.0.1' },
-      port: ENV.fetch('ISU_DB_PORT') { '3306' },
-      username: ENV.fetch('ISU_DB_USER') { 'local_user' },
-      password: ENV.fetch('ISU_DB_PASSWORD') { 'password' },
-      database: 'isudb',
-      encoding: 'utf8mb4',
-      reconnect: true
-    )
+    # @conn ||= Mysql2::Client.new(
+    #   host: ENV.fetch('ISU_DB_HOST') { '127.0.0.1' },
+    #   port: ENV.fetch('ISU_DB_PORT') { '3306' },
+    #   username: ENV.fetch('ISU_DB_USER') { 'local_user' },
+    #   password: ENV.fetch('ISU_DB_PASSWORD') { 'password' },
+    #   database: 'isudb',
+    #   encoding: 'utf8mb4',
+    #   reconnect: true
+    # )
   end
 
   def call(env)
