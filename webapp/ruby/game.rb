@@ -283,10 +283,10 @@ class Game
 
     def get_status(conn, room_name)
       conn = connect_db
+      current_time = update_room_time(conn, room_name, 0)
       begin
         conn.query('BEGIN')
 
-        current_time = update_room_time(conn, room_name, 0)
 
         mitems = {}
         items = conn.query('SELECT * FROM m_item', symbolize_keys: true).map do |mitem|
