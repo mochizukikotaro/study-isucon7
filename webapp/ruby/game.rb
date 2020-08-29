@@ -210,7 +210,7 @@ class Game
         statement = conn.prepare('SELECT isu FROM adding WHERE room_name = ? AND time <= ?')
 
         statement.execute(room_name, req_time).each do |raw_adding|
-          total_milli_isu += str2big(a.isu)
+          total_milli_isu += str2big(raw_adding['isu'])
         end
         statement.close
         total_milli_isu = total_milli_isu * 1000
