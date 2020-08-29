@@ -162,9 +162,9 @@ class Game
 
     def add_isu(conn, room_name, req_isu, req_time)
       conn = connect_db
-      update_room_time(conn, room_name, req_time)
       begin
         conn.query('BEGIN')
+        update_room_time(conn, room_name, req_time)
 
 
         statement = conn.prepare('INSERT INTO adding(room_name, time, isu) VALUES (?, ?, "0") ON DUPLICATE KEY UPDATE isu=isu')
@@ -192,9 +192,9 @@ class Game
 
     def buy_item(conn, room_name, item_id, count_bought, req_time)
       conn = connect_db
-      update_room_time(conn, room_name, req_time)
       begin
         conn.query('BEGIN')
+        update_room_time(conn, room_name, req_time)
 
 
         statement = conn.prepare('SELECT COUNT(*) AS count FROM buying WHERE room_name = ? AND item_id = ?')
@@ -283,9 +283,9 @@ class Game
 
     def get_status(conn, room_name)
       conn = connect_db
-      current_time = update_room_time(conn, room_name, 0)
       begin
         conn.query('BEGIN')
+        current_time = update_room_time(conn, room_name, 0)
 
 
         mitems = {}
