@@ -521,7 +521,7 @@ class Game
       ws = nil
     end
 
-    ticker = Concurrent::Channel.ticker(3.0)
+    ticker = Concurrent::Channel.ticker(1.0)
     Concurrent::Channel.go do
       ticker.each do |tick|
         if tick
