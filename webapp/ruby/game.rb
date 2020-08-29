@@ -136,7 +136,7 @@ class Game
       statement.execute(room_name)
       statement.close
 
-      statement = conn.prepare('SELECT time FROM room_time WHERE room_name = ?')
+      statement = conn.prepare('SELECT time FROM room_time WHERE room_name = ? FOR UPDATE')
       room_time = statement.execute(room_name).first['time']
       statement.close
 
