@@ -208,14 +208,12 @@ class Game
 
         total_milli_isu = 0
         statement = conn.prepare('SELECT isu FROM adding WHERE room_name = ? AND time <= ?')
-        addings = statement.execute(room_name, req_time).map do |raw_adding|
-          Adding.new(room_name, req_time, raw_adding['isu'])
+
+        statement.execute(room_name, req_time).each do |raw_adding|
+          total_milli_isu += str2big(a.isu)
         end
         statement.close
-
-        addings.each do |a|
-          total_milli_isu += str2big(a.isu) * 1000
-        end
+        total_milli_isu = total_milli_isu * 1000
 
         statement = conn.prepare('SELECT item_id, ordinal, time FROM buying WHERE room_name = ?')
         buyings = statement.execute(room_name).map do |raw_buying|
