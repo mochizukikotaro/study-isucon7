@@ -302,7 +302,6 @@ class Game
         total_milli_isu = 0
         adding_at = {}
         statement.execute(room_name).map do |fields|
-          Adding.new(room_name, fields['time'], fields['isu'])
           if fields['time'] <= current_time
             total_milli_isu += str2big(fields['isu'].to_i) * 1000
           else
