@@ -393,8 +393,8 @@ class Game
         Schedule.new(current_time, big2exp(total_milli_isu), big2exp(total_power)),
       ]
 
-      # currentTime から 1000 ミリ秒先までシミュレーションする
-      (current_time + 1).upto(current_time + 1000).each do |t|
+      # currentTime から 500 ミリ秒先までシミュレーションする
+      (current_time + 1).upto(current_time + 500).each do |t|
         total_milli_isu += total_power
         updated = false
 
