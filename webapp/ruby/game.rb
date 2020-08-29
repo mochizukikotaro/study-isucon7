@@ -213,34 +213,19 @@ class Game
         statement.close
         total_milli_isu = total_milli_isu * 1000
 
-        statement = conn.prepare('SELECT item_id, ordinal, time FROM buying WHERE room_name = ?')
-        buyings = statement.execute(room_name).map do |raw_buying|
-          Buying.new(room_name, raw_buying['item_id'], raw_buying['ordinal'], raw_buying['time'])
-        end
-        statement.close
-
-        buyings.each do |b|
-          statement = conn.prepare('SELECT * FROM m_item WHERE item_id = ?')
-          item = statement.execute(b.item_id).map do |raw_item|
-            MItem.new(
-              item_id: raw_item['item_id'],
-              power1: raw_item['power1'],
-              power2: raw_item['power2'],
-              power3: raw_item['power3'],
-              power4: raw_item['power4'],
-              price1: raw_item['price1'],
-              price2: raw_item['price2'],
-              price3: raw_item['price3'],
-              price4: raw_item['price4'],
-            )
-          end.first
-          statement.close
-          cost = item.get_price(b.ordinal) * 1000
-          total_milli_isu -= cost
-          if b.time <= req_time
-            gain = item.get_power(b.ordinal) * (req_time - b.time)
-            total_milli_isu += gain
-          end
+        sql = <<~SQL
+          select time, room_name, b.item_id,
+            ((price3*ordinal+1)*(POW(price4,(price1*ordinal+price2))))*1000 as cost,
+            ((power3*ordinal+1)*(POW(power4,(power1*ordinal+power2))))*(GREATEST((? - time), 0)) as gain
+          from buying b
+          inner join m_item m on m.item_id = b.item_id
+          where room_name = ?
+        SQL
+        statement = conn.prepare(sql)
+        data = statement.execute(req_time, room_name).first
+        if data
+          total_milli_isu -= data['cost']
+          total_milli_isu += data['gain']
         end
 
         statement = conn.prepare('SELECT * FROM m_item WHERE item_id = ?')
