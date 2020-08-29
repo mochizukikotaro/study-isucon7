@@ -296,8 +296,18 @@ class Game
 
 
         statement = conn.prepare('SELECT time, isu FROM adding WHERE room_name = ?')
-        addings = statement.execute(room_name).map do |fields|
-          Adding.new(room_name, fields['time'], fields['isu'])
+        total_milli_isu = 0
+        adding_at = {}
+        statement.execute(room_name).map do |fields|
+          if fields['time'] <= current_time
+            total_milli_isu += str2big(fields['isu'].to_i) * 1000
+          else
+            adding_at[fields['time']] = {
+              room_name: room_name,
+              time: fields['time'],
+              isu: fields['isu'].to_i,
+            }
+          end
         end
         statement.close
 
@@ -314,7 +324,7 @@ class Game
       else
         conn.query('COMMIT')
 
-        status = calc_status(current_time, mitems, addings, buyings)
+        status = calc_status(current_time, total_milli_isu, mitems, adding_at, buyings)
 
         # calcStatusに時間がかかる可能性があるので タイムスタンプを取得し直す
         latest_time = get_current_time(conn)
@@ -324,9 +334,8 @@ class Game
       end
     end
 
-    def calc_status(current_time, mitems, addings, buyings)
+    def calc_status(current_time, total_milli_isu, mitems, adding_at, buyings)
       # 1ミリ秒に生産できる椅子の単位をミリ椅子とする
-      total_milli_isu = 0
       total_power = 0
 
       item_power    = {} # ItemID => Power
@@ -338,21 +347,11 @@ class Game
       item_power0   = {} # ItemID => currentTime における Power
       item_built0   = {} # ItemID => currentTime における BuiltCount
 
-      adding_at = {} # Time => currentTime より先の Adding
       buying_at = {} # Time => currentTime より先の Buying
 
       mitems.each_key do |item_id|
         item_power[item_id] = 0
         item_building[item_id] = []
-      end
-
-      addings.each do |a|
-        # adding は adding.time に isu を増加させる
-        if a.time <= current_time
-          total_milli_isu += str2big(a.isu) * 1000
-        else
-          adding_at[a.time] = a
-        end
       end
 
       buyings.each do |b|
@@ -398,7 +397,8 @@ class Game
         # 時刻 t で発生する adding を計算する
         unless adding_at[t].nil?
           updated = true
-          total_milli_isu += str2big(adding_at[t].isu) * 1000
+          total_milli_isu += str2big(adding_at[t][:isu]) * 1000
+          adding_at[t][:isu] = adding_at[t][:isu].to_s
         end
 
         # 時刻 t で発生する buying を計算する
