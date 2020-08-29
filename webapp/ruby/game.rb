@@ -164,18 +164,8 @@ class Game
 
         update_room_time(conn, room_name, req_time)
 
-        statement = conn.prepare('INSERT INTO adding(room_name, time, isu) VALUES (?, ?, "0") ON DUPLICATE KEY UPDATE isu=isu')
-        statement.execute(room_name, req_time)
-        statement.close
-
-        statement = conn.prepare('SELECT isu FROM adding WHERE room_name = ? AND time = ? FOR UPDATE')
-        isu_str = statement.execute(room_name, req_time).first['isu']
-        statement.close
-        isu = str2big(isu_str)
-
-        isu += req_isu
-        statement = conn.prepare('UPDATE adding SET isu = ? WHERE room_name = ? AND time = ?')
-        statement.execute(isu.to_s, room_name, req_time)
+        statement = conn.prepare('INSERT INTO adding(room_name, time, isu) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE isu=isu')
+        statement.execute(room_name, req_time, req_isu)
         statement.close
       rescue => e
         puts "fail to add isu: room=#{room_name} time=#{req_time} isu=#{req_isu}"
@@ -509,7 +499,7 @@ class Game
 
       case req.action
       when 'addIsu'
-        success = self.class.add_isu(connect_db, room_name, self.class.str2big(req.isu), req.time)
+        success = self.class.add_isu(connect_db, room_name, req.isu, req.time)
       when 'buyItem'
         success = self.class.buy_item(connect_db, room_name, req.item_id, req.count_bought, req.time)
       else
