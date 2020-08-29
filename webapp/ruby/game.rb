@@ -534,7 +534,7 @@ class Game
     Concurrent::Channel.go do
       ticker.each do |tick|
         if tick
-          status = self.class.get_status(room_name)
+          status = self.class.get_status(connect_db, room_name)
           ws.send(status.to_json)
         end
       end
