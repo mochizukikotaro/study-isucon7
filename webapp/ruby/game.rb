@@ -450,13 +450,14 @@ class Game
     private
 
     def connect_db
-      $client ||= Mysql2::Client.new(
+      @client ||= Mysql2::Client.new(
         host: ENV.fetch('ISU_DB_HOST') { '127.0.0.1' },
         port: ENV.fetch('ISU_DB_PORT') { '3306' },
         username: ENV.fetch('ISU_DB_USER') { 'local_user' },
         password: ENV.fetch('ISU_DB_PASSWORD') { 'password' },
         database: 'isudb',
         encoding: 'utf8mb4',
+        reconnect: true
       )
     end
   end
