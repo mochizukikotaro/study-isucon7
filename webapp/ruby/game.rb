@@ -103,8 +103,6 @@ class Game
         conn.query('TRUNCATE TABLE room_time')
       rescue => e
         puts e.message
-      else
-        conn.close
       end
     end
 
@@ -183,11 +181,9 @@ class Game
       rescue => e
         puts "fail to add isu: room=#{room_name} time=#{req_time} isu=#{req_isu}"
         conn.query('ROLLBACK')
-        conn.close
         false
       else
         conn.query('COMMIT')
-        conn.close
         true
       end
     end
@@ -279,11 +275,9 @@ class Game
       rescue => e
         puts "fail to buy item id=#{item_id} bought=#{count_bought} time=#{req_time}"
         conn.query('ROLLBACK')
-        conn.close
         false
       else
         conn.query('COMMIT')
-        conn.close
         true
       end
     end
@@ -319,7 +313,6 @@ class Game
         puts e.message
         puts e.backtrace.join("\n")
         conn.query('ROLLBACK')
-        conn.close
         nil
       else
         conn.query('COMMIT')
@@ -328,8 +321,6 @@ class Game
 
         # calcStatusに時間がかかる可能性があるので タイムスタンプを取得し直す
         latest_time = get_current_time(conn)
-
-        conn.close
 
         status.time = latest_time
         status
@@ -459,13 +450,13 @@ class Game
     private
 
     def connect_db
-      Mysql2::Client.new(
+      $client ||= Mysql2::Client.new(
         host: ENV.fetch('ISU_DB_HOST') { '127.0.0.1' },
         port: ENV.fetch('ISU_DB_PORT') { '3306' },
         username: ENV.fetch('ISU_DB_USER') { 'local_user' },
         password: ENV.fetch('ISU_DB_PASSWORD') { 'password' },
         database: 'isudb',
-        encoding: 'utf8mb4'
+        encoding: 'utf8mb4',
       )
     end
   end
