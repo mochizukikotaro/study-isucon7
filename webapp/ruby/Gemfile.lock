@@ -10,9 +10,18 @@ GEM
     faye-websocket (0.10.7)
       eventmachine (>= 0.12.0)
       websocket-driver (>= 0.5.1)
+    google-protobuf (3.13.0)
+    googleapis-common-protos-types (1.0.5)
+      google-protobuf (~> 3.11)
+    grpc (1.28.0)
+      google-protobuf (~> 3.11)
+      googleapis-common-protos-types (~> 1.0)
     multi_json (1.12.2)
     mustermann (1.0.1)
     mysql2 (0.4.10)
+    newrelic-infinite_tracing (6.12.0.367)
+      grpc (~> 1.28.0)
+      newrelic_rpm (= 6.12.0.367)
     newrelic_rpm (6.12.0.367)
     puma (3.10.0)
     rack (2.0.3)
@@ -55,6 +64,7 @@ DEPENDENCIES
   concurrent-ruby-edge
   faye-websocket
   mysql2
+  newrelic-infinite_tracing
   newrelic_rpm
   puma
   rspec
