@@ -162,10 +162,10 @@ class Game
 
     def add_isu(conn, room_name, req_isu, req_time)
       conn = connect_db
+      update_room_time(conn, room_name, req_time)
       begin
         conn.query('BEGIN')
 
-        update_room_time(conn, room_name, req_time)
 
         statement = conn.prepare('INSERT INTO adding(room_name, time, isu) VALUES (?, ?, "0") ON DUPLICATE KEY UPDATE isu=isu')
         statement.execute(room_name, req_time)
@@ -192,10 +192,10 @@ class Game
 
     def buy_item(conn, room_name, item_id, count_bought, req_time)
       conn = connect_db
+      update_room_time(conn, room_name, req_time)
       begin
         conn.query('BEGIN')
 
-        update_room_time(conn, room_name, req_time)
 
         statement = conn.prepare('SELECT COUNT(*) AS count FROM buying WHERE room_name = ? AND item_id = ?')
         count_buying = statement.execute(room_name, item_id).first['count']
