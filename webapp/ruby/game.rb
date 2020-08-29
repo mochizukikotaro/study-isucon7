@@ -157,8 +157,7 @@ class Game
       current_time
     end
 
-    def add_isu(room_name, req_isu, req_time)
-      conn = connect_db
+    def add_isu(conn, room_name, req_isu, req_time)
 
       begin
         conn.query('BEGIN')
@@ -188,8 +187,7 @@ class Game
       end
     end
 
-    def buy_item(room_name, item_id, count_bought, req_time)
-      conn = connect_db
+    def buy_item(conn, room_name, item_id, count_bought, req_time)
 
       begin
         conn.query('BEGIN')
@@ -280,8 +278,7 @@ class Game
       end
     end
 
-    def get_status(room_name)
-      conn = connect_db
+    def get_status(conn, room_name)
 
       begin
         conn.query('BEGIN')
@@ -466,6 +463,18 @@ class Game
     @app = app
   end
 
+  def connect_db
+    @conn ||= Mysql2::Client.new(
+      host: ENV.fetch('ISU_DB_HOST') { '127.0.0.1' },
+      port: ENV.fetch('ISU_DB_PORT') { '3306' },
+      username: ENV.fetch('ISU_DB_USER') { 'local_user' },
+      password: ENV.fetch('ISU_DB_PASSWORD') { 'password' },
+      database: 'isudb',
+      encoding: 'utf8mb4',
+      reconnect: true
+    )
+  end
+
   def call(env)
     if ENV['RACK_ENV'] == 'development'
       Lineprof.profile do
@@ -484,7 +493,7 @@ class Game
     path = env['PATH_INFO']
     room_name = path[4, path.length - 4]
 
-    status = self.class.get_status(room_name)
+    status = self.class.get_status(connect_db, room_name)
     ws.send(status.to_json)
 
     ws.on :message do |event|
@@ -500,16 +509,16 @@ class Game
 
       case req.action
       when 'addIsu'
-        success = self.class.add_isu(room_name, self.class.str2big(req.isu), req.time)
+        success = self.class.add_isu(connect_db, room_name, self.class.str2big(req.isu), req.time)
       when 'buyItem'
-        success = self.class.buy_item(room_name, req.item_id, req.count_bought, req.time)
+        success = self.class.buy_item(connect_db, room_name, req.item_id, req.count_bought, req.time)
       else
         return
       end
 
       if success
         # GameResponse を返却する前に 反映済みの GameStatus を返す
-        status = self.class.get_status(room_name)
+        status = self.class.get_status(connect_db, room_name)
         ws.send(status.to_json)
       end
 
