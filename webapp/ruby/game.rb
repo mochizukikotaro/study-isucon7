@@ -245,22 +245,15 @@ class Game
           end
         end
 
-        statement = conn.prepare('SELECT * FROM m_item WHERE item_id = ?')
-        item = statement.execute(item_id).map do |raw_item|
-          MItem.new(
-            item_id: raw_item['item_id'],
-            power1: raw_item['power1'],
-            power2: raw_item['power2'],
-            power3: raw_item['power3'],
-            power4: raw_item['power4'],
-            price1: raw_item['price1'],
-            price2: raw_item['price2'],
-            price3: raw_item['price3'],
-            price4: raw_item['price4'],
-          )
-        end.first
-        statement.close
-        need = item.get_price(count_bought + 1) * 1000
+        sql = <<~SQL
+          select (price3 * ? + 1) * (POW(price4, (price1 * ? + price2))) as price
+          from m_item
+          where item_id = ?
+        SQL
+        statement = conn.prepare(sql)
+        cnt = count_bought + 1
+        need = statement.execute(cnt, cnt, item_id).first['price'] * 1000
+
         if total_milli_isu < need
           puts 'not enough'
           conn.query('ROLLBACK')
