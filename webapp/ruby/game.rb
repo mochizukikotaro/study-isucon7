@@ -160,12 +160,47 @@ class Game
       current_time
     end
 
+    def update_room_time_for_add_and_buy(conn, room_name, req_time)
+      statement = conn.prepare('SELECT time FROM room_time WHERE room_name = ? FOR UPDATE')
+      room_time = statement.execute(room_name).first['time']
+      statement.close
+
+      current_time = get_current_time(conn)
+
+      if room_time > current_time
+        raise ArgumentError.new, 'room time is future'
+      end
+
+      if !req_time.zero? && req_time < current_time
+        raise ArgumentError.new, 'reqTime is past'
+      end
+
+      statement = conn.prepare('UPDATE room_time SET time = ? WHERE room_name = ?')
+      statement.execute(current_time, room_name)
+      statement.close
+    end
+
+    def update_room_time_for_get_status(conn, room_name, req_time)
+      # See page 13 and 17 in https://www.slideshare.net/ichirin2501/insert-51938787
+      statement = conn.prepare('INSERT INTO room_time(room_name, time) VALUES (?, 0) ON DUPLICATE KEY UPDATE time = time')
+      statement.execute(room_name)
+      statement.close
+
+      current_time = get_current_time(conn)
+
+      statement = conn.prepare('UPDATE room_time SET time = ? WHERE room_name = ?')
+      statement.execute(current_time, room_name)
+      statement.close
+
+      current_time
+    end
+
     def add_isu(conn, room_name, req_isu, req_time)
       conn = connect_db
-      update_room_time(conn, room_name, req_time)
       begin
         conn.query('BEGIN')
 
+        update_room_time_for_add_and_buy(conn, room_name, req_time)
 
         statement = conn.prepare('INSERT INTO adding(room_name, time, isu) VALUES (?, ?, "0") ON DUPLICATE KEY UPDATE isu=isu')
         statement.execute(room_name, req_time)
@@ -192,10 +227,10 @@ class Game
 
     def buy_item(conn, room_name, item_id, count_bought, req_time)
       conn = connect_db
-      update_room_time(conn, room_name, req_time)
       begin
         conn.query('BEGIN')
 
+        update_room_time_for_add_and_buy(conn, room_name, req_time)
 
         statement = conn.prepare('SELECT COUNT(*) AS count FROM buying WHERE room_name = ? AND item_id = ?')
         count_buying = statement.execute(room_name, item_id).first['count']
@@ -283,10 +318,10 @@ class Game
 
     def get_status(conn, room_name)
       conn = connect_db
-      current_time = update_room_time(conn, room_name, 0)
       begin
         conn.query('BEGIN')
 
+        current_time = update_room_time_for_get_status(conn, room_name, 0)
 
         mitems = {}
         items = conn.query('SELECT * FROM m_item', symbolize_keys: true).map do |mitem|
