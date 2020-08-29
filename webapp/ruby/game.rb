@@ -164,18 +164,18 @@ class Game
 
         update_room_time(conn, room_name, req_time)
 
-        statement = conn.prepare('INSERT INTO adding(room_name, time, isu) VALUES (?, ?, "0") ON DUPLICATE KEY UPDATE isu=isu')
-        statement.execute(room_name, req_time)
+        statement = conn.prepare('SELECT count(*) AS c FROM adding WHERE room_name = ? AND time = ?')
+        count = statement.execute(room_name, req_time).first['c']
         statement.close
 
-        statement = conn.prepare('SELECT isu FROM adding WHERE room_name = ? AND time = ? FOR UPDATE')
-        isu_str = statement.execute(room_name, req_time).first['isu']
-        statement.close
-        isu = str2big(isu_str)
+        if count.to_i.zero?
+          statement = conn.prepare('INSERT INTO adding(room_name, time, isu) VALUES (?, ?, "0")')
+          statement.execute(room_name, req_time)
+          statement.close
+        end
 
-        isu += req_isu
-        statement = conn.prepare('UPDATE adding SET isu = ? WHERE room_name = ? AND time = ?')
-        statement.execute(isu.to_s, room_name, req_time)
+        statement = conn.prepare('UPDATE adding SET isu = isu + ? WHERE room_name = ? AND time = ?')
+        statement.execute(req_isu, room_name, req_time)
         statement.close
       rescue => e
         puts "fail to add isu: room=#{room_name} time=#{req_time} isu=#{req_isu}"
