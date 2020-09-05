@@ -7,7 +7,8 @@ require 'mysql2'
 class Game
   include ::NewRelic::Agent::MethodTracer
 
-  @@buying_by_room = {}
+  @@buying_price = {}
+  @@buying_power = {}
 
   module Jsonable
     def to_json(*args)
@@ -340,7 +341,9 @@ class Game
     end
 
     def calc_status(current_time, total_milli_isu, mitems, adding_at, buyings, room_name)
-      @@buying_by_room[room_name] ||= {}
+      @@buying_price[room_name] ||= {}
+      @@buying_power[room_name] ||= {}
+
       # 1ミリ秒に生産できる椅子の単位をミリ椅子とする
       total_power = 0
 
@@ -365,8 +368,8 @@ class Game
         item_bought[b.item_id] ||= 0
         item_bought[b.item_id] += 1
         m = mitems[b.item_id]
-        @@buying_by_room[room_name][b.item_id] ||= {}
-        price = @@buying_by_room[room_name][b.item_id][b.ordinal] ||= m.get_price(b.ordinal)
+        @@buying_price[room_name][b.item_id] ||= {}
+        price = @@buying_price[room_name][b.item_id][b.ordinal] ||= m.get_price(b.ordinal)
         total_milli_isu -= price * 1000
 
         if b.time <= current_time
@@ -377,7 +380,7 @@ class Game
           total_power += power
           item_power[b.item_id] ||= 0
           item_power[b.item_id] += power
-        else
+        elsif b.time <= current_time + 1000
           buying_at[b.time] ||= []
           buying_at[b.time] << b
         end
@@ -389,8 +392,8 @@ class Game
 
         # mochizuki
         ordinal = (item_bought[m.item_id] || 0) + 1
-        @@buying_by_room[room_name][m.item_id] ||= {}
-        price = @@buying_by_room[room_name][m.item_id][ordinal] ||= m.get_price(ordinal)
+        @@buying_price[room_name][m.item_id] ||= {}
+        price = @@buying_price[room_name][m.item_id][ordinal] ||= m.get_price(ordinal)
 
         item_price[m.item_id] = price
         if total_milli_isu >= price * 1000
@@ -423,7 +426,12 @@ class Game
             updated_id[b.item_id] = true
             item_built[b.item_id] ||= 0
             item_built[b.item_id] += 1
-            power = m.get_power(b.ordinal)
+
+            # mochizuki
+            @@buying_power[room_name][m.item_id] ||= {}
+            power = @@buying_power[room_name][b.item_id][b.ordinal] ||= m.get_power(b.ordinal)
+            # power = m.get_power(b.ordinal)
+
             item_power[b.item_id] ||= 0
             item_power[b.item_id] += power
             total_power += power
