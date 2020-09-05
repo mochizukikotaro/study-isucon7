@@ -429,10 +429,10 @@ class Game
         end
 
         # 時刻 t で購入可能になったアイテムを記録する
-        mitems.each_key do |item_id|
+        item_price.each do |item_id, price|
           next unless item_on_sale[item_id].nil?
 
-          if total_milli_isu >= item_price[item_id] * 1000
+          if total_milli_isu >= price * 1000
             item_on_sale[item_id] = t
           end
         end
