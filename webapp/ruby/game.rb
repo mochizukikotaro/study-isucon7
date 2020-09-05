@@ -438,7 +438,7 @@ class Game
         end
       end
 
-      gs_adding = adding_at.values.map { |a| a }
+      gs_adding = adding_at.values
 
       gs_items = mitems.keys.map { |item_id| Item.new(item_id, item_bought[item_id], item_built0[item_id], big2exp(item_price[item_id]), item_power0[item_id], item_building[item_id]) }
 
