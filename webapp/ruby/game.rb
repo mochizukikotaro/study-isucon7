@@ -375,7 +375,12 @@ class Game
         if b.time <= current_time
           item_built[b.item_id] ||= 0
           item_built[b.item_id] += 1
-          power = m.get_power(item_bought[b.item_id])
+
+          # mochizuki
+          @@buying_power[room_name][b.item_id] ||= {}
+          power = @@buying_power[room_name][b.item_id][b.ordinal] ||= m.get_power(b.ordinal)
+          # power = m.get_power(item_bought[b.item_id])
+
           total_milli_isu += power * (current_time - b.time)
           total_power += power
           item_power[b.item_id] ||= 0
@@ -430,7 +435,6 @@ class Game
             # mochizuki
             @@buying_power[room_name][m.item_id] ||= {}
             power = @@buying_power[room_name][b.item_id][b.ordinal] ||= m.get_power(b.ordinal)
-            # power = m.get_power(b.ordinal)
 
             item_power[b.item_id] ||= 0
             item_power[b.item_id] += power
