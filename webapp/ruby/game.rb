@@ -461,15 +461,6 @@ class Game
       )
     end
 
-    add_method_tracer :str2big
-    add_method_tracer :big2exp
-    add_method_tracer :get_current_time
-    add_method_tracer :update_room_time
-    add_method_tracer :add_isu
-    add_method_tracer :buy_item
-    add_method_tracer :get_status
-    add_method_tracer :calc_status
-    add_method_tracer :connect_db
   end
 
   def initialize(app = nil)
