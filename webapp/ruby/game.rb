@@ -387,6 +387,8 @@ class Game
           item_on_sale[m.item_id] = 0 # 0 は 時刻 currentTime で購入可能であることを表す
         end
       end
+      # mochizuki: sort
+      item_price = item_price.sort_by{|k,v|v}.to_h
 
       schedule = [
         Schedule.new(current_time, big2exp(total_milli_isu), big2exp(total_power)),
@@ -434,6 +436,8 @@ class Game
 
           if total_milli_isu >= price * 1000
             item_on_sale[item_id] = t
+          else
+            break
           end
         end
       end
