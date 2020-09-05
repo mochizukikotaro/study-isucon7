@@ -69,6 +69,8 @@ class Game
 
   class MItem
     attr_reader :item_id, :power1, :power2, :power3, :power3, :power4, :price1, :price2, :price3, :price4
+    @@price = {}
+    @@power = {}
 
     def initialize(item_id:, power1:, power2:, power3:, power4:, price1:, price2:, price3:, price4:)
       @item_id = item_id
@@ -83,17 +85,23 @@ class Game
     end
 
     def get_power(count)
-      # power(x):=(p3*x + 1) * p4 ** (p1*x + p2)
-      s = @power3 * count + 1
-      t = @power4 ** (@power1 * count + @power2)
-      s * t
+      @@power[@item_id] ||= {}
+      @@power[@item_id][count] ||= lambda{
+        # power(x):=(p3*x + 1) * p4 ** (p1*x + p2)
+        s = @power3 * count + 1
+        t = @power4 ** (@power1 * count + @power2)
+        s * t
+      }.call
     end
 
     def get_price(count)
-      # price(x):=(p3*x + 1) * p4 ** (p1*x + p2)
-      s = @price3 * count + 1
-      t = @price4 ** (@price1 * count + @price2)
-      s * t
+      @@price[@item_id] ||= {}
+      @@price[@item_id][count] ||= lambda{
+        # price(x):=(p3*x + 1) * p4 ** (p1*x + p2)
+        s = @price3 * count + 1
+        t = @price4 ** (@price1 * count + @price2)
+        s * t
+      }.call
     end
   end
 
