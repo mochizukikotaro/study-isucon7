@@ -298,18 +298,20 @@ class Game
 
 
 
-        statement = conn.prepare('SELECT time, isu FROM adding WHERE room_name = ?')
+        statement = conn.prepare('SELECT time, isu FROM adding WHERE room_name = ? order by time asc')
         total_milli_isu = 0
         adding_at = {}
         statement.execute(room_name).map do |fields|
           if fields['time'] <= current_time
             total_milli_isu += str2big(fields['isu'].to_i) * 1000
-          else
+          elsif fields['time'] <= current_time + 1000
             adding_at[fields['time']] = {
               room_name: room_name,
               time: fields['time'],
               isu: fields['isu'].to_i,
             }
+          else
+            break
           end
         end
         statement.close
