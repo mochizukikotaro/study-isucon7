@@ -7,6 +7,8 @@ require 'mysql2'
 class Game
   include ::NewRelic::Agent::MethodTracer
 
+  @@buying_by_room = {}
+
   module Jsonable
     def to_json(*args)
       JSON.dump(as_json)
@@ -327,7 +329,7 @@ class Game
       else
         conn.query('COMMIT')
 
-        status = calc_status(current_time, total_milli_isu, mitems, adding_at, buyings)
+        status = calc_status(current_time, total_milli_isu, mitems, adding_at, buyings, room_name)
 
         # calcStatusに時間がかかる可能性があるので タイムスタンプを取得し直す
         latest_time = get_current_time(conn)
@@ -337,7 +339,8 @@ class Game
       end
     end
 
-    def calc_status(current_time, total_milli_isu, mitems, adding_at, buyings)
+    def calc_status(current_time, total_milli_isu, mitems, adding_at, buyings, room_name)
+      @@buying_by_room[room_name] ||= {}
       # 1ミリ秒に生産できる椅子の単位をミリ椅子とする
       total_power = 0
 
@@ -362,7 +365,9 @@ class Game
         item_bought[b.item_id] ||= 0
         item_bought[b.item_id] += 1
         m = mitems[b.item_id]
-        total_milli_isu -= m.get_price(b.ordinal) * 1000
+        @@buying_by_room[room_name][b.item_id] ||= {}
+        price = @@buying_by_room[room_name][b.item_id][b.ordinal] ||= m.get_price(b.ordinal)
+        total_milli_isu -= price * 1000
 
         if b.time <= current_time
           item_built[b.item_id] ||= 0
