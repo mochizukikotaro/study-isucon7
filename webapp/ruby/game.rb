@@ -386,7 +386,12 @@ class Game
       mitems.each_value do |m|
         item_power0[m.item_id] = big2exp(item_power[m.item_id])
         item_built0[m.item_id] = item_built[m.item_id]
-        price = m.get_price((item_bought[m.item_id] || 0) + 1)
+
+        # mochizuki
+        ordinal = (item_bought[m.item_id] || 0) + 1
+        @@buying_by_room[room_name][m.item_id] ||= {}
+        price = @@buying_by_room[room_name][m.item_id][ordinal] ||= m.get_price(ordinal)
+
         item_price[m.item_id] = price
         if total_milli_isu >= price * 1000
           item_on_sale[m.item_id] = 0 # 0 は 時刻 currentTime で購入可能であることを表す
