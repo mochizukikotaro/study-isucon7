@@ -123,14 +123,24 @@ class Game
     end
 
     def big2exp(n)
-      s = n.to_s
+      digit = n.bit_length * 3 / 10
 
-      if s.length <= 15
-        return Exponential.new(n, 0)
+      e = digit - 17
+
+      if e < 0 # 17桁以上
+        s = n.to_s
+        if s.length <= 15
+          return Exponential.new(n, 0)
+        else
+          t = s[0,15].to_i
+          return Exponential.new(t, (s.length - 15))
+        end
+      else # 17桁未満
+        n = n / 10**e
+        s = n.to_s
+        t = s[0,15].to_i
+        return Exponential.new(t, (s.length - 15) + e)
       end
-
-      t = s[0,15].to_i
-      Exponential.new(t, (s.length - 15))
     end
 
     def get_current_time(conn)
