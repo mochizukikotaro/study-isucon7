@@ -8,6 +8,7 @@ gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'newrelic_rpm'
 gem 'newrelic-infinite_tracing'
+gem 'stackprof'
 
 group :test do
   gem 'rspec'

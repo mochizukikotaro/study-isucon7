@@ -3,6 +3,7 @@ require 'concurrent-edge'
 require 'faye/websocket'
 require 'json'
 require 'mysql2'
+require 'stackprof'
 
 class Game
   include ::NewRelic::Agent::MethodTracer
